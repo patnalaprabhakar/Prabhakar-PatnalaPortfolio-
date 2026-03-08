@@ -22,7 +22,9 @@ const projectSchema = new mongoose.Schema({
     links: {
         github: { type: String },
         demo: { type: String }
-    }
+    },
+    role: { type: String },
+    timeline: { type: String }
 });
 
 const portfolioSchema = new mongoose.Schema({
