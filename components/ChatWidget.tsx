@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, PortfolioData } from '../types';
 
@@ -30,11 +29,21 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ data }) => {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
-    // Mock response since AI is disabled
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'model', text: "The AI assistant is currently offline." }]);
-      setIsLoading(false);
-    }, 1000);
+    // Free AI response logic (example)
+    fetch('https://api.freeai.chatbot/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: userMsg })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setMessages(prev => [...prev, { role: 'model', text: data.reply || 'AI response unavailable.' }]);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setMessages(prev => [...prev, { role: 'model', text: 'AI response unavailable.' }]);
+        setIsLoading(false);
+      });
   };
 
   return (
@@ -46,9 +55,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ data }) => {
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center font-bold text-sm shadow-xl shadow-blue-500/30">AI</div>
               <div>
-                <h3 className="text-sm font-bold text-white tracking-wide">Studio Assistant</h3>
+                <h3 className="text-sm font-bold text-white tracking-wide">AI Chatbot</h3>
                 <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Context Synced
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Free AI Enabled
                 </p>
               </div>
             </div>

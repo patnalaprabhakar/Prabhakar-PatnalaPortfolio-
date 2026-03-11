@@ -20,7 +20,8 @@ const ProjectCard: React.FC<{
   isAdmin: boolean;
   onEdit: (p: Project) => void;
   onPreview: (p: Project) => void;
-}> = ({ project, isAdmin, onEdit, onPreview }) => {
+  onDelete?: (p: Project) => void;
+}> = ({ project, isAdmin, onEdit, onPreview, onDelete }) => {
   const ensureAbsoluteUrl = (url?: string) => {
     if (!url || url === '#') return '#';
     if (/^(https?:\/\/|mailto:|tel:)/i.test(url)) return url;
@@ -32,12 +33,25 @@ const ProjectCard: React.FC<{
   return (
     <div className="group relative bg-white/[0.02] rounded-[2rem] overflow-hidden border border-white/[0.05] transition-all duration-500 flex flex-col h-full bento-card glass inner-glow">
       {isAdmin && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onEdit(project); }}
-          className="absolute top-6 right-6 z-40 bg-blue-600 text-white px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider shadow-2xl border border-white/20"
-        >
-          Curate
-        </button>
+        <div className="absolute top-6 right-6 z-40 flex gap-2">
+          {onDelete && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(project); }}
+              className="bg-red-600 hover:bg-red-500 text-white p-2 rounded-full shadow-2xl border border-white/20 transition-colors"
+              title="Delete Project"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(project); }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider shadow-2xl border border-white/20"
+          >
+            Curate
+          </button>
+        </div>
       )}
 
       <div
@@ -169,15 +183,21 @@ const App: React.FC = () => {
     localStorage.setItem('pp_portfolio_v5', JSON.stringify(newData)); // Keep local backup
 
     try {
-      await fetch(`${BACKEND_URL}/api/portfolio`, {
+      const response = await fetch(`${BACKEND_URL}/api/portfolio`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newData),
       });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({ message: 'Cannot parse error' }));
+        console.error("Backend Error Data:", errData);
+        alert(`Failed to save to backend: ${errData.message || response.statusText}`);
+      }
     } catch (error) {
       console.error("Failed to save data to backend", error);
+      alert("Network error: Failed to save to backend.");
     }
   };
 
@@ -192,6 +212,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleDeleteProject = (projectToDelete: Project) => {
+    if (window.confirm("Are you sure you want to delete this project?")) {
+      persistData({ ...data, projects: data.projects.filter(p => p.id !== projectToDelete.id) });
+    }
+  };
+
   const renderWorkGrid = (projects: Project[], title: string) => (
     <div className="mb-32 last:mb-0">
       <div className="flex items-center gap-8 mb-12">
@@ -203,7 +229,7 @@ const App: React.FC = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {projects.map((p) => (
-          <ProjectCard key={p.id} project={p} isAdmin={isAdmin} onEdit={setEditingProject} onPreview={setPreviewProject} />
+          <ProjectCard key={p.id} project={p} isAdmin={isAdmin} onEdit={setEditingProject} onPreview={setPreviewProject} onDelete={handleDeleteProject} />
         ))}
       </div>
     </div>
@@ -314,8 +340,19 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {data.projectCategories && data.projectCategories.length > 0 ? (
-            data.projectCategories.map((cat, idx) => {
+          {(() => {
+            const baseCategories = [
+              { name: "Ui/UX projects", filterTag: "UI, UX" },
+              { name: "Graphic design projects", filterTag: "!UI, !UX, !VIDEO" }
+            ];
+            
+            const customCategories = (data.projectCategories || []).filter(
+              c => c.name !== "Ui/UX projects" && c.name !== "Graphic design projects"
+            );
+
+            const allCategories = [...baseCategories, ...customCategories];
+
+            return allCategories.map((cat, idx) => {
               const filterTags = (cat.filterTag || '').split(',').map(t => t.trim().toUpperCase()).filter(t => t !== '');
               const includedTags = filterTags.filter(t => !t.startsWith('!'));
               const excludedTags = filterTags.filter(t => t.startsWith('!')).map(t => t.substring(1));
@@ -345,14 +382,8 @@ const App: React.FC = () => {
                   {renderWorkGrid(matchingProjects, cat.name)}
                 </React.Fragment>
               );
-            })
-          ) : (
-            <>
-              {/* Fallback old logic if projectCategories is somehow empty */}
-              {renderWorkGrid(data.projects.filter(p => p.tags.some(t => t.toUpperCase().includes('UI') || t.toUpperCase().includes('UX'))), "Ui/UX projects")}
-              {renderWorkGrid(data.projects.filter(p => !p.tags.some(t => t.toUpperCase().includes('UI') || t.toUpperCase().includes('UX'))), "Graphic design projects")}
-            </>
-          )}
+            });
+          })()}
         </section>
 
         {/* TIMELINE SECTION */}

@@ -60,7 +60,23 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    const dataToSave = { ...formData };
+    
+    // Ensure base categories always exist perfectly at the top of the array
+    const baseCats = [
+      { name: "Ui/UX projects", filterTag: "UI, UX" },
+      { name: "Graphic design projects", filterTag: "!UI, !UX, !VIDEO" }
+    ];
+    
+    // Filter out the base categories from current array if they accidentally exist in duplicates, 
+    // and append the custom ones
+    const customCats = (dataToSave.projectCategories || []).filter(
+      c => c.name !== "Ui/UX projects" && c.name !== "Graphic design projects" && c.name !== "Video Projects" 
+    );
+    
+    dataToSave.projectCategories = [...baseCats, ...customCats];
+    
+    onSave(dataToSave);
     onClose();
   };
 
@@ -262,9 +278,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 mb-6">
                 <h3 className="text-blue-400 font-bold text-xs uppercase tracking-widest mb-2">Category Logic</h3>
                 <p className="text-gray-400 text-xs leading-relaxed">
-                  Define project categories by name and the tags they should include.
-                  Separate tags with commas (e.g., <code className="text-white bg-black/50 px-1 rounded">UI, UX</code>).
-                  To exclude a tag, prefix it with an exclamation mark (e.g., <code className="text-white bg-black/50 px-1 rounded">!UI, !UX</code>).
+                  System base categories (Ui/UX & Graphic design) are permanently locked and appear first.
+                  Append custom categories below to display them sequentially after the base categories.
+                  Define custom project rules using tags (e.g., <code className="text-white bg-black/50 px-1 rounded">UI, UX</code> or <code className="text-white bg-black/50 px-1 rounded">!UI, !UX</code>).
                 </p>
               </div>
 
@@ -276,35 +292,68 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
               </button>
 
               <div className="space-y-4">
-                {(formData.projectCategories || []).map((cat, idx) => (
-                  <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-[2rem] space-y-4 relative group">
-                    <button type="button" onClick={() => {
-                      const newCats = [...(formData.projectCategories || [])];
-                      newCats.splice(idx, 1);
-                      setFormData({ ...formData, projectCategories: newCats });
-                    }} className="absolute top-6 right-6 p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-all">
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                    <div className="grid md:grid-cols-2 gap-6 pr-12">
-                      <div className="space-y-2">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Category Name</label>
-                        <input type="text" value={cat.name} onChange={(e) => {
-                          const newCats = [...(formData.projectCategories || [])];
-                          newCats[idx] = { ...newCats[idx], name: e.target.value };
-                          setFormData({ ...formData, projectCategories: newCats });
-                        }} className="w-full bg-transparent border-b border-white/10 py-2 text-white font-bold" placeholder="E.g., UI/UX Projects" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Filter Tags (Comma Separated)</label>
-                        <input type="text" value={cat.filterTag} onChange={(e) => {
-                          const newCats = [...(formData.projectCategories || [])];
-                          newCats[idx] = { ...newCats[idx], filterTag: e.target.value };
-                          setFormData({ ...formData, projectCategories: newCats });
-                        }} className="w-full bg-transparent border-b border-white/10 py-2 text-blue-400 font-mono text-xs" placeholder="E.g., UI, UX or !UI" />
-                      </div>
+                {/* System Locked Nodes */}
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] space-y-4 relative group opacity-50 select-none">
+                  <div className="absolute top-6 right-6 text-[10px] font-bold uppercase tracking-widest text-blue-500/50 bg-blue-500/10 px-3 py-1 rounded-full">System Node</div>
+                  <div className="grid md:grid-cols-2 gap-6 pr-12">
+                    <div className="space-y-2">
+                      <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Category Name</label>
+                      <input type="text" value="Ui/UX projects" disabled className="w-full bg-transparent border-b border-white/5 py-2 text-white font-bold cursor-not-allowed" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Filter Tags</label>
+                      <input type="text" value="UI, UX" disabled className="w-full bg-transparent border-b border-white/5 py-2 text-blue-400 font-mono text-xs cursor-not-allowed" />
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] space-y-4 relative group opacity-50 select-none">
+                  <div className="absolute top-6 right-6 text-[10px] font-bold uppercase tracking-widest text-blue-500/50 bg-blue-500/10 px-3 py-1 rounded-full">System Node</div>
+                  <div className="grid md:grid-cols-2 gap-6 pr-12">
+                    <div className="space-y-2">
+                      <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Category Name</label>
+                      <input type="text" value="Graphic design projects" disabled className="w-full bg-transparent border-b border-white/5 py-2 text-white font-bold cursor-not-allowed" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Filter Tags</label>
+                      <input type="text" value="!UI, !UX, !VIDEO" disabled className="w-full bg-transparent border-b border-white/5 py-2 text-blue-400 font-mono text-xs cursor-not-allowed" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Nodes */}
+                {(formData.projectCategories || []).map((cat, actualIdx) => {
+                  if (cat.name === "Ui/UX projects" || cat.name === "Graphic design projects") return null;
+                  return (
+                    <div key={actualIdx} className="p-6 bg-white/5 border border-white/10 rounded-[2rem] space-y-4 relative group">
+                      <button type="button" onClick={() => {
+                        const newCats = [...(formData.projectCategories || [])];
+                        newCats.splice(actualIdx, 1);
+                        setFormData({ ...formData, projectCategories: newCats });
+                      }} className="absolute top-6 right-6 p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-all">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                      <div className="grid md:grid-cols-2 gap-6 pr-12">
+                        <div className="space-y-2">
+                          <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Category Name</label>
+                          <input type="text" value={cat.name} onChange={(e) => {
+                            const newCats = [...(formData.projectCategories || [])];
+                            newCats[actualIdx] = { ...newCats[actualIdx], name: e.target.value };
+                            setFormData({ ...formData, projectCategories: newCats });
+                          }} className="w-full bg-transparent border-b border-white/10 py-2 text-white font-bold" placeholder="E.g., Custom Category" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Filter Tags (Comma Separated)</label>
+                          <input type="text" value={cat.filterTag} onChange={(e) => {
+                            const newCats = [...(formData.projectCategories || [])];
+                            newCats[actualIdx] = { ...newCats[actualIdx], filterTag: e.target.value };
+                            setFormData({ ...formData, projectCategories: newCats });
+                          }} className="w-full bg-transparent border-b border-white/10 py-2 text-blue-400 font-mono text-xs" placeholder="E.g., UI, UX or !UI" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
