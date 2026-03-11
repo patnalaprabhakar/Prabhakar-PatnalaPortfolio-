@@ -17,11 +17,14 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
     tags: [],
     imageUrls: [],
     links: { github: '', demo: '' },
+    role: '',
+    timeline: '',
     ...project
   });
 
   const [tagsString, setTagsString] = useState(formData.tags?.join(', ') || '');
   const [imageUrls, setImageUrls] = useState<string[]>(formData.imageUrls || ['']);
+  const [videoUrl, setVideoUrl] = useState(formData.videoUrl || '');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [assetStatus, setAssetStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -73,7 +76,10 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
       id: formData.id || `p${Date.now()}`,
       tags: tagsString.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
       imageUrls: imageUrls.filter(url => url.trim() !== ''),
-      links: formData.links || { github: '', demo: '' }
+      videoUrl: videoUrl.trim() !== '' ? videoUrl.trim() : undefined,
+      links: formData.links || { github: '', demo: '' },
+      role: formData.role || '',
+      timeline: formData.timeline || ''
     } as Project;
     onSave(finalProject);
   };
@@ -111,15 +117,17 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
               <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Live Asset Monitor</label>
               {assetStatus !== 'idle' && (
                 <span className={`text-[8px] font-bold uppercase px-3 py-1 rounded-full border transition-all duration-300 ${assetStatus === 'valid' ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5' :
-                    assetStatus === 'invalid' ? 'text-red-400 border-red-400/20 bg-red-400/5' :
-                      'text-blue-400 border-blue-400/20 bg-blue-400/5'
+                  assetStatus === 'invalid' ? 'text-red-400 border-red-400/20 bg-red-400/5' :
+                    'text-blue-400 border-blue-400/20 bg-blue-400/5'
                   }`}>
                   {assetStatus === 'valid' ? 'Verified' : assetStatus === 'invalid' ? 'Asset Err' : 'Scanning...'}
                 </span>
               )}
             </div>
             <div className="relative aspect-video rounded-3xl overflow-hidden bg-black/80 border border-white/10 flex items-center justify-center group/mon">
-              {currentPreviewUrl && currentPreviewUrl.trim() !== '' ? (
+              {focusedIndex === -1 && videoUrl.trim() !== '' ? (
+                <video src={videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+              ) : currentPreviewUrl && currentPreviewUrl.trim() !== '' ? (
                 <>
                   {assetStatus !== 'invalid' && (
                     <img
@@ -145,7 +153,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
               ) : (
                 <div className="text-center opacity-20"><svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
               )}
-              <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1 rounded-lg border border-white/10 text-[8px] font-bold text-white uppercase tracking-widest backdrop-blur-md">Slot {focusedIndex + 1} Buffer</div>
+              <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1 rounded-lg border border-white/10 text-[8px] font-bold text-white uppercase tracking-widest backdrop-blur-md">{focusedIndex === -1 ? 'Video Buffer' : `Slot ${focusedIndex + 1} Buffer`}</div>
             </div>
           </div>
 
@@ -157,6 +165,17 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
             <div className="space-y-2">
               <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Expertise Tags</label>
               <input type="text" value={tagsString} onChange={(e) => setTagsString(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs transition-all" placeholder="UI, UX, Motion..." />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Role</label>
+              <input type="text" value={formData.role || ''} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs transition-all" placeholder="Designer..." />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Timeline</label>
+              <input type="text" value={formData.timeline || ''} onChange={(e) => setFormData({ ...formData, timeline: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs transition-all" placeholder="2023-2024..." />
             </div>
           </div>
 
@@ -179,8 +198,18 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
           </div>
 
           <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Execution Details (Long Description)</label>
+            </div>
+            <textarea rows={5} value={formData.longDescription || ''} onChange={(e) => setFormData({ ...formData, longDescription: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs transition-all" placeholder="This project explores the synthesis of advanced digital interfaces with human-centric ergonomics..." />
+          </div>
+
+          <div className="space-y-4">
             <div className="flex justify-between items-center"><label className="text-[9px] font-bold uppercase tracking-widest text-gray-500 ml-1">Asset Registry</label><button type="button" onClick={handleAddImageUrl} className="text-[8px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-lg border border-emerald-400/20 hover:bg-emerald-400 hover:text-white transition-all">+ Register New Link</button></div>
             <div className="space-y-3">
+              <div className="flex gap-2">
+                <input type="text" value={videoUrl} onFocus={() => setFocusedIndex(-1)} onChange={(e) => setVideoUrl(e.target.value)} className={`flex-1 bg-white/5 border ${focusedIndex === -1 ? 'border-blue-500/50' : 'border-white/10'} rounded-xl px-4 py-3 text-[9px] font-mono text-white transition-all`} placeholder="Direct Video URL (mp4/webm)..." />
+              </div>
               {imageUrls.map((url, idx) => (
                 <div key={idx} className="flex gap-2">
                   <input type="text" value={url} onFocus={() => setFocusedIndex(idx)} onChange={(e) => handleImageUrlChange(idx, e.target.value)} className={`flex-1 bg-white/5 border ${focusedIndex === idx ? 'border-emerald-500/50' : 'border-white/10'} rounded-xl px-4 py-3 text-[9px] font-mono text-white transition-all`} placeholder="Direct/Drive link..." />

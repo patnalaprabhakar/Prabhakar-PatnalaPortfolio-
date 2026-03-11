@@ -1,16 +1,18 @@
 
 import React, { useState } from 'react';
-import { PortfolioData, Experience, Skill } from '../types';
+import { PortfolioData, Experience, Skill, Project } from '../types';
 
 interface EditProfileModalProps {
   data: PortfolioData;
   onClose: () => void;
   onSave: (updatedData: PortfolioData) => void;
+  onEditProject?: (project: Project) => void;
+  onAddNewProject?: () => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSave }) => {
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSave, onEditProject, onAddNewProject }) => {
   const [formData, setFormData] = useState<PortfolioData>({ ...data });
-  const [activeTab, setActiveTab] = useState<'bio' | 'skills' | 'exp' | 'contact'>('bio');
+  const [activeTab, setActiveTab] = useState<'bio' | 'skills' | 'exp' | 'contact' | 'archive'>('bio');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<string | null>(null);
 
@@ -90,6 +92,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
           <button onClick={() => { setActiveTab('bio'); setSuggestion(null); }} className={`px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'bio' ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-gray-500 hover:text-white'}`}>Identity</button>
           <button onClick={() => { setActiveTab('exp'); setSuggestion(null); }} className={`px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'exp' ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-gray-500 hover:text-white'}`}>Timeline</button>
           <button onClick={() => { setActiveTab('skills'); setSuggestion(null); }} className={`px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'skills' ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-gray-500 hover:text-white'}`}>Skills</button>
+          <button onClick={() => { setActiveTab('archive'); setSuggestion(null); }} className={`px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'archive' ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-gray-500 hover:text-white'}`}>Archive</button>
           <button onClick={() => { setActiveTab('contact'); setSuggestion(null); }} className={`px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'contact' ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-gray-500 hover:text-white'}`}>Contact</button>
         </div>
 
@@ -254,6 +257,58 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
             </div>
           )}
 
+          {activeTab === 'archive' && (
+            <div className="space-y-8">
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 mb-6">
+                <h3 className="text-blue-400 font-bold text-xs uppercase tracking-widest mb-2">Category Logic</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  Define project categories by name and the tags they should include.
+                  Separate tags with commas (e.g., <code className="text-white bg-black/50 px-1 rounded">UI, UX</code>).
+                  To exclude a tag, prefix it with an exclamation mark (e.g., <code className="text-white bg-black/50 px-1 rounded">!UI, !UX</code>).
+                </p>
+              </div>
+
+              <button type="button" onClick={() => {
+                const newCat = { name: 'New Category', filterTag: '' };
+                setFormData({ ...formData, projectCategories: [...(formData.projectCategories || []), newCat] });
+              }} className="w-full py-4 border-2 border-dashed border-emerald-500/20 text-emerald-400 rounded-2xl hover:bg-emerald-500/10 transition-all font-bold text-sm tracking-widest uppercase">
+                + Append Category Node
+              </button>
+
+              <div className="space-y-4">
+                {(formData.projectCategories || []).map((cat, idx) => (
+                  <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-[2rem] space-y-4 relative group">
+                    <button type="button" onClick={() => {
+                      const newCats = [...(formData.projectCategories || [])];
+                      newCats.splice(idx, 1);
+                      setFormData({ ...formData, projectCategories: newCats });
+                    }} className="absolute top-6 right-6 p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-all">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    <div className="grid md:grid-cols-2 gap-6 pr-12">
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Category Name</label>
+                        <input type="text" value={cat.name} onChange={(e) => {
+                          const newCats = [...(formData.projectCategories || [])];
+                          newCats[idx] = { ...newCats[idx], name: e.target.value };
+                          setFormData({ ...formData, projectCategories: newCats });
+                        }} className="w-full bg-transparent border-b border-white/10 py-2 text-white font-bold" placeholder="E.g., UI/UX Projects" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Filter Tags (Comma Separated)</label>
+                        <input type="text" value={cat.filterTag} onChange={(e) => {
+                          const newCats = [...(formData.projectCategories || [])];
+                          newCats[idx] = { ...newCats[idx], filterTag: e.target.value };
+                          setFormData({ ...formData, projectCategories: newCats });
+                        }} className="w-full bg-transparent border-b border-white/10 py-2 text-blue-400 font-mono text-xs" placeholder="E.g., UI, UX or !UI" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'skills' && (
             <div className="space-y-8">
               <button type="button" onClick={handleAddSkillCategory} className="w-full py-4 border-2 border-dashed border-emerald-500/20 text-emerald-400 rounded-2xl hover:bg-emerald-500/10 transition-all font-bold text-sm tracking-widest uppercase">
@@ -316,10 +371,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">LinkedIn</label>
                     <input type="text" value={formData.socials.linkedin} onChange={(e) => handleUpdateSocial('linkedin', e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 transition-all font-mono text-[10px]" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Instagram</label>
-                    <input type="text" value={formData.socials.instagram} onChange={(e) => handleUpdateSocial('instagram', e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 transition-all font-mono text-[10px]" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Behance</label>

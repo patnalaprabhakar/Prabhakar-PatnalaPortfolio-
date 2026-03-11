@@ -52,28 +52,28 @@ const Navbar: React.FC<NavbarProps> = ({ isAdmin, onLogout, onLoginClick, onEdit
       <div className={`max-w-[1440px] mx-auto px-6 md:px-12 transition-all duration-500 ${scrolled ? 'glass rounded-full border-white/5 bg-black/60 shadow-2xl py-3' : 'bg-transparent py-0'}`}>
         <div className="flex justify-between items-center">
           {/* Brand */}
-          <button 
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="text-xl font-bold font-heading tracking-tight text-white hover:text-blue-500 transition-colors group flex items-center"
           >
             PRABHAKAR<span className="text-blue-500 group-hover:pl-0.5 transition-all">.</span>
           </button>
-          
+
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-10">
             <div className="flex gap-8">
               {navLinks.map((link) => (
-                <button 
-                  key={link.name} 
+                <button
+                  key={link.name}
                   onClick={() => scrollToSection(link.href)}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-all relative group"
+                  className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-all relative group"
                 >
                   {link.name}
                   <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-blue-500 group-hover:w-full transition-all duration-300"></span>
                 </button>
               ))}
             </div>
-            
+
             <div className="h-4 w-px bg-white/10 mx-2"></div>
 
             <div className="flex items-center gap-4">
@@ -82,10 +82,10 @@ const Navbar: React.FC<NavbarProps> = ({ isAdmin, onLogout, onLoginClick, onEdit
                 <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 px-3 py-1.5 glass rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none transform -translate-y-2 group-hover:translate-y-0 z-[110]">
                   <span className="text-[7px] font-black uppercase tracking-[0.3em] text-blue-400 whitespace-nowrap">Access Resume</span>
                 </div>
-                
-                <a 
-                  href={ensureAbsoluteUrl(resumeUrl)} 
-                  target="_blank" 
+
+                <a
+                  href={ensureAbsoluteUrl(resumeUrl)}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 hover:text-white hover:bg-blue-600/10 border border-blue-500/20 rounded-full transition-all flex items-center gap-2"
                 >
@@ -95,7 +95,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAdmin, onLogout, onLoginClick, onEdit
               </div>
 
               {isAdmin && (
-                <button 
+                <button
                   onClick={onEditProfile}
                   className="p-2.5 bg-white/5 text-gray-400 hover:text-white rounded-full transition-all border border-white/5 hover:border-blue-500/50"
                 >
@@ -114,30 +114,30 @@ const Navbar: React.FC<NavbarProps> = ({ isAdmin, onLogout, onLoginClick, onEdit
           </div>
 
           {/* Mobile Toggle */}
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden text-white p-3 glass rounded-2xl border border-white/10 hover:border-blue-500/40 transition-all">
-              <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-              </svg>
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden text-white p-3 glass rounded-2xl border border-white/10 hover:border-blue-500/40 transition-all">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+            </svg>
           </button>
         </div>
       </div>
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[120] bg-black/98 flex flex-col items-center justify-center p-12 backdrop-blur-3xl transition-all animate-in fade-in zoom-in duration-300">
-           <button onClick={() => setMobileMenuOpen(false)} className="absolute top-8 right-8 p-5 text-white bg-white/5 rounded-full border border-white/10">
-              <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-           </button>
-           <div className="flex flex-col space-y-10 text-center">
-              {navLinks.map((link) => (
-                <button key={link.name} onClick={() => scrollToSection(link.href)} className="text-4xl font-heading font-bold text-white hover:text-blue-500 transition-all tracking-tighter uppercase">{link.name}</button>
-              ))}
-              <div className="h-px w-24 bg-white/10 mx-auto"></div>
-              <a href={ensureAbsoluteUrl(resumeUrl)} target="_blank" rel="noopener noreferrer" className="text-2xl font-heading font-bold text-blue-500 flex items-center justify-center gap-4 hover:text-white transition-colors">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                RESOURCE ACCESS
-              </a>
-           </div>
+        <div className="md:hidden fixed inset-0 z-[120] bg-black/98 flex flex-col items-center justify-center p-12 backdrop-blur-3xl transition-all animate-in fade-in zoom-in duration-300">
+          <button onClick={() => setMobileMenuOpen(false)} className="absolute top-8 right-8 p-5 text-white bg-white/5 rounded-full border border-white/10">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+          <div className="flex flex-col space-y-10 text-center">
+            {navLinks.map((link) => (
+              <button key={link.name} onClick={() => scrollToSection(link.href)} className="text-4xl font-heading font-bold text-white hover:text-blue-500 transition-all tracking-tighter uppercase">{link.name}</button>
+            ))}
+            <div className="h-px w-24 bg-white/10 mx-auto"></div>
+            <a href={ensureAbsoluteUrl(resumeUrl)} target="_blank" rel="noopener noreferrer" className="text-2xl font-heading font-bold text-blue-500 flex items-center justify-center gap-4 hover:text-white transition-colors">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              RESOURCE ACCESS
+            </a>
+          </div>
         </div>
       )}
     </nav>

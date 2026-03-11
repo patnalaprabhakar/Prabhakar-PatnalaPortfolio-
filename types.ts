@@ -6,10 +6,13 @@ export interface Project {
   longDescription: string;
   tags: string[];
   imageUrls: string[];
+  videoUrl?: string;
   links: {
     github?: string;
     demo?: string;
   };
+  role?: string;
+  timeline?: string;
 }
 
 export interface Experience {
@@ -32,9 +35,13 @@ export interface Message {
 export interface SocialLinks {
   github: string;
   linkedin: string;
-  instagram: string;
   behance: string;
   dribbble: string;
+}
+
+export interface ProjectCategory {
+  name: string;
+  filterTag: string;
 }
 
 export interface PortfolioData {
@@ -51,6 +58,7 @@ export interface PortfolioData {
   skills: Skill[];
   experience: Experience[];
   projects: Project[];
+  projectCategories?: ProjectCategory[];
   email: string;
   phone: string;
   socials: SocialLinks;

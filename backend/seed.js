@@ -18,10 +18,14 @@ const initialData = {
     socials: {
         github: "https://github.com",
         linkedin: "https://linkedin.com",
-        instagram: "https://instagram.com",
         behance: "https://behance.net",
         dribbble: "https://dribbble.com"
     },
+    projectCategories: [
+        { name: "Ui/UX projects", filterTag: "UI, UX" },
+        { name: "Graphic design projects", filterTag: "!UI, !UX" },
+        { name: "Video Projects", filterTag: "Video" }
+    ],
     skills: [
         { category: "Visual Design", items: ["UI Design", "Branding", "Design Systems", "Typography", "Motion"] },
         { category: "Strategy", items: ["UX Research", "Wireframing", "Product Logic", "Prototyping", "Sprints"] }
@@ -66,6 +70,16 @@ const initialData = {
             longDescription: "Defining the next generation of desktop interactions through immersive, depth-based visual hierarchies.",
             tags: ["UI/UX", "Product Design", "Future"],
             imageUrls: ["https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=1200"],
+            links: { demo: "#", github: "#" }
+        },
+        {
+            id: "p4",
+            title: "Digital Horizon",
+            description: "A bold, dynamic visual showcase of motion design and brand storytelling.",
+            longDescription: "An intensive exploration into 3D motion graphics and kinetic typography, designed to capture the essence of forward-thinking digital brands.",
+            tags: ["Video", "Motion"],
+            imageUrls: [],
+            videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
             links: { demo: "#", github: "#" }
         }
     ]

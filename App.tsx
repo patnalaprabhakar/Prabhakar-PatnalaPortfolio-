@@ -44,12 +44,23 @@ const ProjectCard: React.FC<{
         className="relative aspect-[16/10] overflow-hidden bg-black cursor-pointer"
         onClick={() => onPreview(project)}
       >
-        <img
-          src={project.imageUrls[0] || 'https://via.placeholder.com/800x600'}
-          alt={project.title}
-          referrerPolicy="no-referrer"
-          className="w-full h-full object-cover transition-all duration-1000 ease-in-out group-hover:scale-110 group-hover:rotate-1"
-        />
+        {project.videoUrl && project.videoUrl.trim() !== '' ? (
+          <video
+            src={project.videoUrl}
+            className="w-full h-full object-cover transition-all duration-1000 ease-in-out group-hover:scale-110 group-hover:rotate-1"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={project.imageUrls[0] || 'https://via.placeholder.com/800x600'}
+            alt={project.title}
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover transition-all duration-1000 ease-in-out group-hover:scale-110 group-hover:rotate-1"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 bg-blue-600/10 backdrop-blur-[2px]">
           <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-black shadow-2xl transform scale-75 group-hover:scale-100 transition-transform duration-500">
@@ -303,11 +314,45 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Filtering UI/UX work for the UI/UX projects section */}
-          {renderWorkGrid(data.projects.filter(p => p.tags.some(t => t.toUpperCase().includes('UI') || t.toUpperCase().includes('UX'))), "Ui/UX projects")}
+          {data.projectCategories && data.projectCategories.length > 0 ? (
+            data.projectCategories.map((cat, idx) => {
+              const filterTags = (cat.filterTag || '').split(',').map(t => t.trim().toUpperCase()).filter(t => t !== '');
+              const includedTags = filterTags.filter(t => !t.startsWith('!'));
+              const excludedTags = filterTags.filter(t => t.startsWith('!')).map(t => t.substring(1));
 
-          {/* Filtering other work for the Graphic design projects section */}
-          {renderWorkGrid(data.projects.filter(p => !p.tags.some(t => t.toUpperCase().includes('UI') || t.toUpperCase().includes('UX'))), "Graphic design projects")}
+              const matchingProjects = data.projects.filter(p => {
+                if (filterTags.length === 0) return false;
+
+                const pTags = p.tags.map(t => t.toUpperCase());
+
+                let matchesIncludes = includedTags.length === 0;
+                if (includedTags.length > 0) {
+                  matchesIncludes = includedTags.some(inc => pTags.some(pt => pt.includes(inc)));
+                }
+
+                let matchesExcludes = true;
+                if (excludedTags.length > 0) {
+                  matchesExcludes = !excludedTags.some(exc => pTags.some(pt => pt.includes(exc)));
+                }
+
+                return matchesIncludes && matchesExcludes;
+              });
+
+              if (matchingProjects.length === 0 && !isAdmin) return null; // Only show empty categories to admin
+
+              return (
+                <React.Fragment key={`cat-${idx}`}>
+                  {renderWorkGrid(matchingProjects, cat.name)}
+                </React.Fragment>
+              );
+            })
+          ) : (
+            <>
+              {/* Fallback old logic if projectCategories is somehow empty */}
+              {renderWorkGrid(data.projects.filter(p => p.tags.some(t => t.toUpperCase().includes('UI') || t.toUpperCase().includes('UX'))), "Ui/UX projects")}
+              {renderWorkGrid(data.projects.filter(p => !p.tags.some(t => t.toUpperCase().includes('UI') || t.toUpperCase().includes('UX'))), "Graphic design projects")}
+            </>
+          )}
         </section>
 
         {/* TIMELINE SECTION */}
@@ -414,9 +459,18 @@ const App: React.FC = () => {
         <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
           <p className="label-luxury opacity-30 text-[9px] tracking-[0.6em]">{data.name.toUpperCase()} — SYSTEM ARCHIVE 2025</p>
           <div className="flex gap-10">
-            <a href={data.socials.instagram} className="label-luxury text-[8px] hover:text-blue-500 transition-colors tracking-[0.5em]">Instagram</a>
-            <a href={data.socials.dribbble} className="label-luxury text-[8px] hover:text-blue-500 transition-colors tracking-[0.5em]">Dribbble</a>
-            <a href={data.socials.behance} className="label-luxury text-[8px] hover:text-blue-500 transition-colors tracking-[0.5em]">Behance</a>
+            {data.socials.github && data.socials.github !== '#' && (
+              <a href={data.socials.github} className="label-luxury text-[8px] hover:text-blue-500 transition-colors tracking-[0.5em]">GitHub</a>
+            )}
+            {data.socials.linkedin && data.socials.linkedin !== '#' && (
+              <a href={data.socials.linkedin} className="label-luxury text-[8px] hover:text-blue-500 transition-colors tracking-[0.5em]">LinkedIn</a>
+            )}
+            {data.socials.dribbble && data.socials.dribbble !== '#' && (
+              <a href={data.socials.dribbble} className="label-luxury text-[8px] hover:text-blue-500 transition-colors tracking-[0.5em]">Dribbble</a>
+            )}
+            {data.socials.behance && data.socials.behance !== '#' && (
+              <a href={data.socials.behance} className="label-luxury text-[8px] hover:text-blue-500 transition-colors tracking-[0.5em]">Behance</a>
+            )}
           </div>
           <p className="label-luxury opacity-10 text-[8px] tracking-[0.4em]">© PATNALA STUDIO</p>
         </div>
@@ -427,7 +481,7 @@ const App: React.FC = () => {
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLogin={handleLogin} recoveryEmail="patnalaprabhakar827@gmail.com" />}
       {editingProject && <EditProjectModal project={editingProject} onClose={() => setEditingProject(null)} onSave={handleSaveProject} />}
       {isAddingProject && <EditProjectModal project={{}} isNew onClose={() => setIsAddingProject(false)} onSave={handleSaveProject} />}
-      {showProfileEdit && <EditProfileModal data={data} onClose={() => setShowProfileEdit(false)} onSave={persistData} />}
+      {showProfileEdit && <EditProfileModal data={data} onClose={() => setShowProfileEdit(false)} onSave={persistData} onEditProject={setEditingProject} onAddNewProject={() => setIsAddingProject(true)} />}
       {previewProject && <ProjectPreviewModal project={previewProject} onClose={() => setPreviewProject(null)} />}
     </div>
   );

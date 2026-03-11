@@ -8,7 +8,7 @@ export const PORTFOLIO_DATA: PortfolioData = {
   availabilityStatus: "Open for Creative Direction",
   aboutHeadline: "Shaping digital narratives with intention.",
   about: "I craft human-centered digital ecosystems where functionality meets purpose. I believe design is about more than just aesthetics; it's about building meaningful experiences that resonate at the intersection of brand and human connection.",
-  profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800",
+  profileImage: "https://drive.google.com/file/d/1hTzprXmGLyp7C2_QI0jb2zbwyef8DZ6Y/view?usp=sharing",
   resumeUrl: "#",
   yearsExperience: "8+",
   yearsExperienceLabel: "Elite Years",
@@ -17,12 +17,16 @@ export const PORTFOLIO_DATA: PortfolioData = {
   socials: {
     github: "https://github.com",
     linkedin: "https://linkedin.com",
-    instagram: "https://instagram.com",
     behance: "https://behance.net",
     dribbble: "https://dribbble.com"
   },
+  projectCategories: [
+    { name: "Ui/UX projects", filterTag: "UI, UX" },
+    { name: "Graphic design projects", filterTag: "!UI, !UX" },
+    { name: "Video Projects", filterTag: "Video" }
+  ],
   skills: [
-    { category: "Visual Design", items: ["UI Design", "Branding", "Design Systems", "Typography", "Motion"] },
+    { category: "Visual Design", items: ["UI Densign", "Branding", "Design Systems", "Typography", "Motion"] },
     { category: "Strategy", items: ["UX Research", "Wireframing", "Product Logic", "Prototyping", "Sprints"] }
   ],
   experience: [
@@ -65,6 +69,16 @@ export const PORTFOLIO_DATA: PortfolioData = {
       longDescription: "Defining the next generation of desktop interactions through immersive, depth-based visual hierarchies.",
       tags: ["UI/UX", "Product Design", "Future"],
       imageUrls: ["https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=1200"],
+      links: { demo: "#", github: "#" }
+    },
+    {
+      id: "p4",
+      title: "Digital Horizon",
+      description: "A bold, dynamic visual showcase of motion design and brand storytelling.",
+      longDescription: "An intensive exploration into 3D motion graphics and kinetic typography, designed to capture the essence of forward-thinking digital brands.",
+      tags: ["Video", "Motion"],
+      imageUrls: [],
+      videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
       links: { demo: "#", github: "#" }
     }
   ]

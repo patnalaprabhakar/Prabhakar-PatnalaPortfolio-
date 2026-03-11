@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 
+const projectCategorySchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    filterTag: { type: String, default: "" }
+});
+
 const skillSchema = new mongoose.Schema({
     category: { type: String, required: true },
     items: [{ type: String }]
@@ -19,6 +24,7 @@ const projectSchema = new mongoose.Schema({
     longDescription: { type: String },
     tags: [{ type: String }],
     imageUrls: [{ type: String }],
+    videoUrl: { type: String },
     links: {
         github: { type: String },
         demo: { type: String }
@@ -41,12 +47,12 @@ const portfolioSchema = new mongoose.Schema({
     skills: [skillSchema],
     experience: [experienceSchema],
     projects: [projectSchema],
+    projectCategories: [projectCategorySchema],
     email: { type: String, required: true },
     phone: { type: String, required: true },
     socials: {
         github: { type: String },
         linkedin: { type: String },
-        instagram: { type: String },
         behance: { type: String },
         dribbble: { type: String }
     }
