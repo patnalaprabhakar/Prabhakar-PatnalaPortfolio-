@@ -126,7 +126,7 @@ const App: React.FC = () => {
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [previewProject, setPreviewProject] = useState<Project | null>(null);
-  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [isAddingProject, setIsAddingProject] = useState<boolean | string>(false);
   const [data, setData] = useState<PortfolioData>(PORTFOLIO_DATA);
 
   useEffect(() => {
@@ -218,13 +218,16 @@ const App: React.FC = () => {
     }
   };
 
-  const renderWorkGrid = (projects: Project[], title: string) => (
+  const renderWorkGrid = (projects: Project[], title: string, filterTag: string) => (
     <div className="mb-32 last:mb-0">
       <div className="flex items-center gap-8 mb-12">
         <h3 className="text-sm font-heading font-bold text-white/30 tracking-[0.5em] uppercase">{title}</h3>
         <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
         {isAdmin && (
-          <button onClick={() => setIsAddingProject(true)} className="px-6 py-2.5 glass text-gray-400 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-500/20 shadow-xl transition-all">+ New Entry</button>
+          <button onClick={() => {
+            const firstTag = filterTag.split(',')[0].replace('!', '').trim();
+            setIsAddingProject(firstTag || true);
+          }} className="px-6 py-2.5 glass text-gray-400 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-500/20 shadow-xl transition-all">+ New Entry</button>
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -341,19 +344,27 @@ const App: React.FC = () => {
           </div>
 
           {(() => {
-            const baseCategories = [
-              { name: "Ui/UX projects", filterTag: "UI, UX" },
-              { name: "Graphic design projects", filterTag: "!UI, !UX, !VIDEO" }
-            ];
-            
             const customCategories = (data.projectCategories || []).filter(
               c => c.name !== "Ui/UX projects" && c.name !== "Graphic design projects"
             );
 
+            const customTagsList = customCategories.flatMap(c => {
+              const effectiveTag = (c.filterTag && c.filterTag.trim()) || c.name;
+              return effectiveTag.split(',').map(t => t.trim().toUpperCase()).filter(t => t && !t.startsWith('!'));
+            });
+
+            const graphicExcludes = ['!UI', '!UX', '!VIDEO', ...customTagsList.map(t => `!${t}`)].join(', ');
+
+            const baseCategories = [
+              { name: "Ui/UX projects", filterTag: "UI, UX" },
+              { name: "Graphic design projects", filterTag: graphicExcludes }
+            ];
+
             const allCategories = [...baseCategories, ...customCategories];
 
             return allCategories.map((cat, idx) => {
-              const filterTags = (cat.filterTag || '').split(',').map(t => t.trim().toUpperCase()).filter(t => t !== '');
+              const effectiveFilterTag = (cat.filterTag && cat.filterTag.trim()) || cat.name;
+              const filterTags = effectiveFilterTag.split(',').map(t => t.trim().toUpperCase()).filter(t => t !== '');
               const includedTags = filterTags.filter(t => !t.startsWith('!'));
               const excludedTags = filterTags.filter(t => t.startsWith('!')).map(t => t.substring(1));
 
@@ -379,7 +390,7 @@ const App: React.FC = () => {
 
               return (
                 <React.Fragment key={`cat-${idx}`}>
-                  {renderWorkGrid(matchingProjects, cat.name)}
+                  {renderWorkGrid(matchingProjects, cat.name, effectiveFilterTag)}
                 </React.Fragment>
               );
             });
@@ -511,7 +522,7 @@ const App: React.FC = () => {
 
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLogin={handleLogin} recoveryEmail="patnalaprabhakar827@gmail.com" />}
       {editingProject && <EditProjectModal project={editingProject} onClose={() => setEditingProject(null)} onSave={handleSaveProject} />}
-      {isAddingProject && <EditProjectModal project={{}} isNew onClose={() => setIsAddingProject(false)} onSave={handleSaveProject} />}
+      {isAddingProject && <EditProjectModal project={typeof isAddingProject === 'string' ? { tags: [isAddingProject] } : {}} isNew onClose={() => setIsAddingProject(false)} onSave={handleSaveProject} />}
       {showProfileEdit && <EditProfileModal data={data} onClose={() => setShowProfileEdit(false)} onSave={persistData} onEditProject={setEditingProject} onAddNewProject={() => setIsAddingProject(true)} />}
       {previewProject && <ProjectPreviewModal project={previewProject} onClose={() => setPreviewProject(null)} />}
     </div>
