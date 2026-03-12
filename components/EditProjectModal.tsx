@@ -88,6 +88,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
     const finalProject = {
       ...formData,
       id: formData.id || `p${Date.now()}`,
+      title: formData.title || 'Untitled Archive',
+      description: formData.description || 'A curated entry in the dynamic project archive.',
       tags: tagsString.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
       imageUrls: imageUrls.filter(url => url.trim() !== ''),
       videoUrl: videoUrl.trim() !== '' ? videoUrl.trim() : undefined,
