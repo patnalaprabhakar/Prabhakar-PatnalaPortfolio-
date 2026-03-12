@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Project } from '../types';
 
 interface EditProjectModalProps {
@@ -28,6 +28,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [assetStatus, setAssetStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   const convertDriveLink = (url: string): string => {
     if (!url || !url.includes('drive.google.com')) return url;
@@ -44,6 +46,18 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
     if (currentUrl && currentUrl.trim() !== '') setAssetStatus('validating');
     else setAssetStatus('idle');
   }, [imageUrls, focusedIndex]);
+
+  const togglePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   const handleAiSummarize = async () => {
     alert("AI Services are currently disconnected.");
@@ -126,7 +140,21 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
             </div>
             <div className="relative aspect-video rounded-3xl overflow-hidden bg-black/80 border border-white/10 flex items-center justify-center group/mon">
               {focusedIndex === -1 && videoUrl.trim() !== '' ? (
-                <video src={videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                <>
+                  <video ref={videoRef} src={videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
+                  <button 
+                    type="button"
+                    onClick={togglePlay}
+                    className="absolute top-4 left-4 z-10 bg-black/60 p-2 rounded-full border border-white/10 text-white hover:bg-white/20 transition-all backdrop-blur-md opacity-70 hover:opacity-100"
+                    title={isPlaying ? "Pause Video" : "Play Video"}
+                  >
+                    {isPlaying ? (
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    ) : (
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    )}
+                  </button>
+                </>
               ) : currentPreviewUrl && currentPreviewUrl.trim() !== '' ? (
                 <>
                   {assetStatus !== 'invalid' && (

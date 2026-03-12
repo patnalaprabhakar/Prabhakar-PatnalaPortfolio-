@@ -71,7 +71,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
     // Filter out the base categories from current array if they accidentally exist in duplicates, 
     // and append the custom ones
     const customCats = (dataToSave.projectCategories || []).filter(
-      c => c.name !== "Ui/UX projects" && c.name !== "Graphic design projects" && c.name !== "Video Projects" 
+      c => c.name !== "Ui/UX projects" && c.name !== "Graphic design projects"
     );
     
     dataToSave.projectCategories = [...baseCats, ...customCats];
@@ -324,16 +324,52 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ data, onClose, onSa
                 {/* Custom Nodes */}
                 {(formData.projectCategories || []).map((cat, actualIdx) => {
                   if (cat.name === "Ui/UX projects" || cat.name === "Graphic design projects") return null;
+
+                  const canMoveUp = formData.projectCategories!.findIndex((c, i) => i < actualIdx && c.name !== "Ui/UX projects" && c.name !== "Graphic design projects") !== -1;
+                  const canMoveDown = formData.projectCategories!.findIndex((c, i) => i > actualIdx && c.name !== "Ui/UX projects" && c.name !== "Graphic design projects") !== -1;
+
+                  const moveCategory = (direction: 'up' | 'down') => {
+                    const newCats = [...(formData.projectCategories || [])];
+                    let swapIdx = -1;
+                    if (direction === 'up') {
+                      for (let i = actualIdx - 1; i >= 0; i--) {
+                        if (newCats[i].name !== "Ui/UX projects" && newCats[i].name !== "Graphic design projects") { swapIdx = i; break; }
+                      }
+                    } else {
+                      for (let i = actualIdx + 1; i < newCats.length; i++) {
+                        if (newCats[i].name !== "Ui/UX projects" && newCats[i].name !== "Graphic design projects") { swapIdx = i; break; }
+                      }
+                    }
+                    if (swapIdx !== -1) {
+                      const temp = newCats[actualIdx];
+                      newCats[actualIdx] = newCats[swapIdx];
+                      newCats[swapIdx] = temp;
+                      setFormData({ ...formData, projectCategories: newCats });
+                    }
+                  };
+
                   return (
                     <div key={actualIdx} className="p-6 bg-white/5 border border-white/10 rounded-[2rem] space-y-4 relative group">
-                      <button type="button" onClick={() => {
-                        const newCats = [...(formData.projectCategories || [])];
-                        newCats.splice(actualIdx, 1);
-                        setFormData({ ...formData, projectCategories: newCats });
-                      }} className="absolute top-6 right-6 p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-all">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                      <div className="grid md:grid-cols-2 gap-6 pr-12">
+                      <div className="absolute top-6 right-6 flex items-center gap-2">
+                        {canMoveUp && (
+                          <button type="button" onClick={() => moveCategory('up')} className="p-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white rounded-full transition-all" title="Move Up">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                          </button>
+                        )}
+                        {canMoveDown && (
+                          <button type="button" onClick={() => moveCategory('down')} className="p-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white rounded-full transition-all" title="Move Down">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                          </button>
+                        )}
+                        <button type="button" onClick={() => {
+                          const newCats = [...(formData.projectCategories || [])];
+                          newCats.splice(actualIdx, 1);
+                          setFormData({ ...formData, projectCategories: newCats });
+                        }} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-all" title="Delete">
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-6 pr-24">
                         <div className="space-y-2">
                           <label className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Category Name</label>
                           <input type="text" value={cat.name} onChange={(e) => {
